@@ -9,7 +9,7 @@ const Dashboard = ({ isAuthenticated = true }) => {
     useEffect(() => {
         if (isAuthenticated) {
             const fetchEvents = () => {
-
+                //restful call to the events DB to list the events 
                 //here to call from database to list the events
 
                 const sampleEvents = [

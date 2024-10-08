@@ -26,7 +26,7 @@ const EventDetails = () => {
     };
 
     const handleSendEmail = () => {
-        // Logic to send the email to guests
+        // restful api call to send mails to guests
         console.log('Sending email to guests:', emailContent);
     };
 

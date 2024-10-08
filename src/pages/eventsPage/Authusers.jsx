@@ -13,12 +13,12 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useForm } from "react-hook-form";
 import axios from "axios";
-import { Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 
-function Auth() {
+function Authusers() {
     const { register, handleSubmit } = useForm();
-    const navigate = Navigate();
+    const navigate = useNavigate();
     // Function to handle login
     const handleLogin = async (data) => {
         try {
@@ -50,14 +50,13 @@ function Auth() {
                 password: data.signinPassword,
             });
 
-            // Assume the token is in response.data.token
+
             const token = response.data.token;
 
-            // Store the JWT token
             localStorage.setItem("jwtToken", token);
 
-            console.log("Signed up successfully");
             navigate("/events")
+            console.log("Signed up successfully");
         } catch (error) {
             console.error("Sign-up error:", error);
         }
@@ -141,4 +140,4 @@ function Auth() {
     );
 }
 
-export default Auth;
+export default Authusers;

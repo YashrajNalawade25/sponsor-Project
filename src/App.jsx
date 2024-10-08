@@ -1,6 +1,6 @@
 import Landing from "./pages/landingPage/Landing"
 import Events from "./pages/eventsPage/Events"
-import Auth from "./pages/eventsPage/Auth";
+import Authusers from "./pages/eventsPage/Authusers";
 import Admin from "./pages/adminPage/Admin"
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Listing from "./pages/eventsPage/Listing";
@@ -9,6 +9,7 @@ import Dashboard from "./pages/adminPage/Dashboard";
 import Vendor from "./pages/adminPage/Vendor";
 import Create from "./pages/adminPage/Create";
 import EventDetails from "./pages/adminPage/EventDetails";
+import AuthAdmin from "./pages/adminPage/AuthAdmin";
 
 function App() {
 
@@ -19,14 +20,14 @@ function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/events" element={<Events />}>
           <Route index element={<Listing />} />
-          <Route path="auth" element={<Auth />} />
+          <Route path="auth" element={<Authusers />} />
           <Route path="shows" element={<Shows />} />
 
         </Route>
         <Route path="/admin" element={<Admin />}>
           <Route index element={<Dashboard />} />
           <Route path="vendor" element={<Vendor />} />
-          <Route path="auth" element={<Auth />} />
+          <Route path="auth" element={<AuthAdmin />} />
           <Route path="create" element={<Create />} />
           <Route path="/admin/event/:eventId" element={<EventDetails />} />
         </Route>
