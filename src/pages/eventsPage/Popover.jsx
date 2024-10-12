@@ -12,7 +12,7 @@ function Popover({ show, event, onClose }) {
     const handleSubmit = () => {
 
         //restful api call for updatind both attendees DB and the event DB handle token here as well
-
+        //here we have the events object coming as prop from the listing page so uses the events id and update accordingly
         console.log(`Guests coming: ${guests}`);
         onClose();
     };

@@ -10,7 +10,8 @@ const Dashboard = ({ isAuthenticated = true }) => {
         if (isAuthenticated) {
             const fetchEvents = () => {
                 //restful call to the events DB to list the events 
-                //here to call from database to list the events
+                //here to call from database to list the events response to be array of objects 
+                // ensure that each event has unique id 
 
                 const sampleEvents = [
                     {

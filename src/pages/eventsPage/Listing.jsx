@@ -5,7 +5,8 @@ function Landing() {
     const [selectedCategory, setSelectedCategory] = useState('popular');
     const [isLoggedIn, setIsLoggedIn] = useState(true);
     const [showPopover, setShowPopover] = useState(false);
-    const [currentEvent, setCurrentEvent] = useState(null);
+    const [currentEvent, setCurrentEvent] = useState({});
+    const [Events, setEvents] = useState([]); // this variable to the store the Events fetched from the DB
 
     // Dummy event data
     const events = {
@@ -29,6 +30,7 @@ function Landing() {
         const token = localStorage.getItem('jwtToken');
         if (token) {
             setIsLoggedIn(true);
+            //over here to call to the DB as response array of obejct is required
         }
     }, [selectedCategory]);
 

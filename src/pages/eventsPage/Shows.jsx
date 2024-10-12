@@ -34,7 +34,7 @@ function Shows() {
     };
 
     useEffect(() => {
-        //restful call to the attendee DB to list the events he has booked for
+        //restful call to the attendee DB to list the events he has booked for response should be array of objects
     }, [])
 
     return (
