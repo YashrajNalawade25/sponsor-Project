@@ -2,11 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, MapPin } from 'lucide-react';
 
-const Dashboard = ({ isAuthenticated = true }) => {
+const Dashboard = () => {
     const navigate = useNavigate();
     const [events, setEvents] = useState([]);
+    const [isAuthenticated, setisAuthenticated] = useState(false);
 
     useEffect(() => {
+
+        const token = localStorage.getItem('jwtToken');
+
+        if (token) {
+            setisAuthenticated(true);
+        }
+
+
+
         if (isAuthenticated) {
             const fetchEvents = () => {
                 //restful call to the events DB to list the events 

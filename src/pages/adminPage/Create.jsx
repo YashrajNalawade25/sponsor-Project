@@ -1,117 +1,143 @@
-import React from 'react';
-import { useForm } from 'react-hook-form';
-import { Calendar, MapPin, FileText, Ticket, Users, Globe, Image as ImageIcon } from 'lucide-react';
+import React, { useState } from 'react';
+import { Calendar, MapPin, FileText, Ticket, Users, Globe } from 'lucide-react';
+import axios from 'axios';
 
 const Create = () => {
-    const {
-        register,
-        handleSubmit,
-        watch,
-        formState: { errors }
-    } = useForm();
+    const [formData, setFormData] = useState({
+        name: '',
+        eventStart: '',
+        eventEnd: '',
+        location: '',
+        description: '',
+        ticketType: 'free',  // Default to free
+        ticketPrice: '0',  // Default price for free ticket
+        capacity: 'unlimited',  // Default capacity
+        customCapacity: '0'  // Default custom capacity
+    });
 
-    const onSubmit = (data) => {
-
-        console.log(data);
-        // Handle form submission with FormData
-        // You can send formData via a POST request
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prevData) => ({
+            ...prevData,
+            [name]: value
+        }));
     };
 
-    const handleBannerChange = (e) => {
-        // Setting file directly in form data
-        if (e.target.files[0]) {
-            register('banner').onChange(e);
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        // Setting defaults if not chosen by the user
+        let finalCapacity = formData.capacity;
+        let finalTicketType = formData.ticketType;
+
+        if (formData.capacity === 'unlimited') {
+            finalCapacity = 'unlimited';  // Default to unlimited if not set
+        } else if (formData.customCapacity !== '0' && formData.capacity === 'limited') {
+            finalCapacity = formData.customCapacity;  // Set to user-defined capacity
+        }
+
+        if (formData.ticketType === 'free') {
+            finalTicketType = 'free';  // Default to free if not updated
+        } else {
+            finalTicketType = formData.ticketPrice;  // Set to custom ticket price if it's paid
+        }
+
+        const finalData = {
+            ...formData,
+            capacity: finalCapacity,
+            ticketDetail: finalTicketType
+        };
+
+        try {
+            const token = localStorage.getItem('jwtToken');
+            const config = {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+            };
+
+            console.log(finalData);
+            const response = await axios.post("http://localhost:8080/event/create", finalData, config);
+            console.log(response.data);
+        } catch (error) {
+            console.error("Error creating event:", error);
         }
     };
 
-    // Watch ticket type and capacity to conditionally render fields
-    const ticketType = watch('ticketType', 'free');
-    const capacity = watch('capacity', 'unlimited');
-
     return (
         <div className="max-w-2xl mx-auto p-3 rounded-lg mt-9">
-            <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-2">
-                    <span className="text-gray-600">{watch('isPublic', true) ? 'Public' : 'Private'}</span>
-                    <button
-                        className={`rounded-full p-1 ${watch('isPublic', true) ? 'bg-blue-500' : 'bg-gray-200'}`}
-                        onClick={() => register('isPublic').onChange(!watch('isPublic'))}
-                    >
-                        <Globe className={`w-4 h-4 ${watch('isPublic', true) ? 'text-white' : 'text-gray-600'}`} />
-                    </button>
-                </div>
-            </div>
-
-            <form onSubmit={handleSubmit(onSubmit)} encType="multipart/form-data">
+            <form onSubmit={handleSubmit}>
+                {/* Event Name */}
                 <div className="mb-4">
                     <input
                         type="text"
+                        name="name"
                         placeholder="Event Name"
                         className="w-full text-3xl font-light text-gray-700 placeholder-gray-400 focus:outline-none"
-                        {...register('eventName', { required: 'Event name is required' })}
+                        value={formData.name}
+                        onChange={handleChange}
+                        required
                     />
-                    {errors.eventName && <p className="text-red-500">{errors.eventName.message}</p>}
                 </div>
 
+                {/* Start & End Dates */}
                 <div className="flex space-x-4 mb-4">
                     <div className="flex-1">
                         <label className="block text-sm font-medium text-gray-600">Start</label>
                         <input
                             type="datetime-local"
+                            name="eventStart"
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                            {...register('startDate', { required: 'Start date is required' })}
+                            value={formData.eventStart}
+                            onChange={handleChange}
+                            required
                         />
-                        {errors.startDate && <p className="text-red-500">{errors.startDate.message}</p>}
                     </div>
                     <div className="flex-1">
                         <label className="block text-sm font-medium text-gray-600">End</label>
                         <input
                             type="datetime-local"
+                            name="eventEnd"
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                            {...register('endDate', { required: 'End date is required' })}
+                            value={formData.eventEnd}
+                            onChange={handleChange}
+                            required
                         />
-                        {errors.endDate && <p className="text-red-500">{errors.endDate.message}</p>}
                     </div>
                 </div>
 
+                {/* Location */}
                 <div className="mb-4">
                     <div className="flex items-center space-x-2 text-gray-600">
                         <MapPin className="w-5 h-5" />
                         <input
                             type="text"
+                            name="location"
                             placeholder="Add Event Location"
                             className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-200"
-                            {...register('location', { required: 'Location is required' })}
+                            value={formData.location}
+                            onChange={handleChange}
+                            required
                         />
-                        {errors.location && <p className="text-red-500">{errors.location.message}</p>}
                     </div>
                 </div>
 
+                {/* Description */}
                 <div className="mb-4">
                     <div className="flex items-center space-x-2 text-gray-600">
                         <FileText className="w-5 h-5" />
                         <textarea
+                            name="description"
                             placeholder="Add Description"
                             className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-200"
-                            {...register('description')}
+                            value={formData.description}
+                            onChange={handleChange}
                         ></textarea>
                     </div>
                 </div>
 
-                {/* Event Banner Upload */}
-                <div className="mb-4">
-                    <div className="flex items-center space-x-2 text-gray-600">
-                        <ImageIcon className="w-5 h-5" />
-                        <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleBannerChange}
-                            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-200"
-                            {...register('banner')}
-                        />
-                    </div>
-                </div>
-
+                {/* Ticket Type & Price */}
                 <div className="space-y-4 mb-6">
                     <div className="flex justify-between items-center">
                         <div className="flex items-center space-x-2">
@@ -119,51 +145,61 @@ const Create = () => {
                             <span className="text-gray-600">Tickets</span>
                         </div>
                         <select
-                            {...register('ticketType')}
+                            name="ticketType"
+                            value={formData.ticketType}
+                            onChange={handleChange}
                             className="border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                         >
                             <option value="free">Free</option>
                             <option value="paid">Paid</option>
                         </select>
                     </div>
-                    {ticketType === 'paid' && (
+                    {formData.ticketType === 'paid' && (
                         <div className="flex items-center space-x-2">
                             <input
                                 type="number"
+                                name="ticketPrice"
                                 placeholder="Ticket Price"
                                 className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-200"
-                                {...register('ticketPrice', { required: 'Ticket price is required for paid tickets' })}
+                                value={formData.ticketPrice}
+                                onChange={handleChange}
+                                required
                             />
-                            {errors.ticketPrice && <p className="text-red-500">{errors.ticketPrice.message}</p>}
                         </div>
                     )}
 
+                    {/* Capacity */}
                     <div className="flex justify-between items-center">
                         <div className="flex items-center space-x-2">
                             <Users className="w-5 h-5 text-gray-600" />
                             <span className="text-gray-600">Capacity</span>
                         </div>
                         <select
-                            {...register('capacity')}
+                            name="capacity"
+                            value={formData.capacity}
+                            onChange={handleChange}
                             className="border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                         >
                             <option value="unlimited">Unlimited</option>
                             <option value="limited">Limited</option>
                         </select>
                     </div>
-                    {capacity === 'limited' && (
+                    {formData.capacity === 'limited' && (
                         <div className="flex items-center space-x-2">
                             <input
                                 type="number"
+                                name="customCapacity"
                                 placeholder="Enter capacity"
                                 className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-200"
-                                {...register('customCapacity', { required: 'Custom capacity is required when limited' })}
+                                value={formData.customCapacity}
+                                onChange={handleChange}
+                                required
                             />
-                            {errors.customCapacity && <p className="text-red-500">{errors.customCapacity.message}</p>}
                         </div>
                     )}
                 </div>
 
+                {/* Submit Button */}
                 <button
                     type="submit"
                     className="w-full bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"

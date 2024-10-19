@@ -1,140 +1,154 @@
-import React from "react";
-import { Button } from "@/components/ui/button";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useForm } from "react-hook-form";
+import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-
 function AuthAdmin() {
-    const { register, handleSubmit } = useForm();
+    const [isLogin, setIsLogin] = useState(true); // Toggle between login and sign-up
+    const [loginEmail, setLoginEmail] = useState("");
+    const [loginPassword, setLoginPassword] = useState("");
+    const [signinEmail, setSigninEmail] = useState("");
+    const [signinPassword, setSigninPassword] = useState("");
     const navigate = useNavigate();
+
     // Function to handle login
-    const handleLogin = async (data) => {
+    const handleLogin = async (e) => {
+        e.preventDefault(); // Prevent page reload
         try {
-            // restful api call to attendee DB to check for login 
-            const response = await axios.post("https://your-backend-url.com/api/login", {
-                email: data.loginEmail,
-                password: data.loginPassword,
-            });
-
-
-            const token = response.data.token;
-
-
+            const cred = {
+                email: loginEmail,
+                password: loginPassword,
+            };
+            const response = await axios.post("http://localhost:8080/login", cred);
+            const token = response.data;
+            console.log(token)
             localStorage.setItem("jwtToken", token);
-            navigate("/admin")
+            navigate("/admin");
             console.log("Logged in successfully");
-
         } catch (error) {
-            console.error("Login error:", error);
+            console.error("Login error:", error.response ? error.response.data : error.message);
         }
     };
 
     // Function to handle sign-up
-    const handleSignUp = async (data) => {
+    const handleSignUp = async (e) => {
+        e.preventDefault(); // Prevent page reload
         try {
-            //restful api to attendee DB for sign in purpose
             const response = await axios.post("https://your-backend-url.com/api/signup", {
-                email: data.signinEmail,
-                password: data.signinPassword,
+                email: signinEmail,
+                password: signinPassword,
             });
-
             const token = response.data.token;
-
             localStorage.setItem("jwtToken", token);
-
-            navigate("/admin")
+            navigate("/admin");
             console.log("Signed up successfully");
         } catch (error) {
-            console.error("Sign-up error:", error);
+            console.error("Sign-up error:", error.response ? error.response.data : error.message);
         }
     };
 
     return (
-        <div className="flex items-center justify-center">
-            <Tabs defaultValue="account" className="w-[400px] m-20">
-                <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="account">Log In</TabsTrigger>
-                    <TabsTrigger value="password">Sign In</TabsTrigger>
-                </TabsList>
+        <div className="flex items-center justify-center min-h-screen bg-gray-100">
+            <div className="w-full max-w-md p-8 space-y-8 bg-white shadow-md rounded-md">
+                <div className="flex justify-around">
+                    <button
+                        className={`text-gray-500 font-semibold focus:outline-none ${isLogin ? "text-indigo-600" : ""}`}
+                        onClick={() => setIsLogin(true)}
+                    >
+                        Log In
+                    </button>
+                    <button
+                        className={`text-gray-500 font-semibold focus:outline-none ${!isLogin ? "text-indigo-600" : ""}`}
+                        onClick={() => setIsLogin(false)}
+                    >
+                        Sign Up
+                    </button>
+                </div>
 
-                {/* Log In Tab */}
-                <TabsContent value="account">
-                    <form onSubmit={handleSubmit(handleLogin)}> {/* Add form submission handler */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Log In</CardTitle>
-                                <CardDescription>Start booking</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-2">
-                                <div className="space-y-1">
-                                    <Label htmlFor="loginEmail">Email</Label>
-                                    <Input
-                                        id="loginEmail"
-                                        type="email"
-                                        {...register("loginEmail", { required: true })}
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <Label htmlFor="loginPassword">Password</Label>
-                                    <Input
-                                        id="loginPassword"
-                                        type="password"
-                                        {...register("loginPassword", { required: true })}
-                                    />
-                                </div>
-                            </CardContent>
-                            <CardFooter>
-                                <Button type="submit">Login</Button> {/* Set button type to submit */}
-                            </CardFooter>
-                        </Card>
-                    </form>
-                </TabsContent>
+                {/* Conditionally render either the login or sign-up form */}
+                {isLogin ? (
+                    <form onSubmit={handleLogin} className="space-y-6">
+                        <div>
+                            <label htmlFor="loginEmail" className="block text-sm font-medium text-gray-700">
+                                Email
+                            </label>
+                            <input
+                                id="loginEmail"
+                                type="email"
+                                value={loginEmail}
+                                onChange={(e) => setLoginEmail(e.target.value)}
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                placeholder="you@example.com"
+                                required
+                            />
+                        </div>
 
-                {/* Sign In Tab */}
-                <TabsContent value="password">
-                    <form onSubmit={handleSubmit(handleSignUp)}> {/* Add form submission handler */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Sign In</CardTitle>
-                                <CardDescription>Create your account</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-2">
-                                <div className="space-y-1">
-                                    <Label htmlFor="signinEmail">Email</Label>
-                                    <Input
-                                        id="signinEmail"
-                                        type="email"
-                                        {...register("signinEmail", { required: true })}
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <Label htmlFor="signinPassword">Password</Label>
-                                    <Input
-                                        id="signinPassword"
-                                        type="password"
-                                        {...register("signinPassword", { required: true })}
-                                    />
-                                </div>
-                            </CardContent>
-                            <CardFooter>
-                                <Button type="submit">Sign In</Button> {/* Set button type to submit */}
-                            </CardFooter>
-                        </Card>
+                        <div>
+                            <label htmlFor="loginPassword" className="block text-sm font-medium text-gray-700">
+                                Password
+                            </label>
+                            <input
+                                id="loginPassword"
+                                type="password"
+                                value={loginPassword}
+                                onChange={(e) => setLoginPassword(e.target.value)}
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                placeholder="Enter your password"
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <button
+                                type="submit"
+                                className="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            >
+                                Login
+                            </button>
+                        </div>
                     </form>
-                </TabsContent>
-            </Tabs>
+                ) : (
+                    <form onSubmit={handleSignUp} className="space-y-6">
+                        <div>
+                            <label htmlFor="signinEmail" className="block text-sm font-medium text-gray-700">
+                                Email
+                            </label>
+                            <input
+                                id="signinEmail"
+                                type="email"
+                                value={signinEmail}
+                                onChange={(e) => setSigninEmail(e.target.value)}
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                placeholder="you@example.com"
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label htmlFor="signinPassword" className="block text-sm font-medium text-gray-700">
+                                Password
+                            </label>
+                            <input
+                                id="signinPassword"
+                                type="password"
+                                value={signinPassword}
+                                onChange={(e) => setSigninPassword(e.target.value)}
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                placeholder="Enter your password"
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <button
+                                type="submit"
+                                className="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            >
+                                Sign Up
+                            </button>
+                        </div>
+                    </form>
+                )}
+            </div>
         </div>
     );
 }
