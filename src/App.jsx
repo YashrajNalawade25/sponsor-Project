@@ -26,7 +26,7 @@ function App() {
         </Route>
         <Route path="/admin" element={<Admin />}>
           <Route index element={<Dashboard />} />
-          <Route path="vendor" element={<Vendor />} />
+          <Route path="/admin/vendor/:eventId" element={<Vendor />} />
           <Route path="auth" element={<AuthAdmin />} />
           <Route path="create" element={<Create />} />
           <Route path="/admin/event/:eventId" element={<EventDetails />} />

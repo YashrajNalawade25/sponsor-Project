@@ -1,25 +1,63 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, MapPin, Users } from 'lucide-react'; // Icons for event recap
+import { useParams, useNavigate } from 'react-router-dom'
+import axios from 'axios';
 
 const EventDetails = () => {
-    // Placeholder event details
-    const [event, setEvent] = useState({
-        date: 'Friday, Aug 23',
-        time: '2:00 PM GMT+5:30',
-        location: 'Westend Mall',
-        guestsCount: 3,
-    });
+    const [event, setEvent] = useState({});
+    const { eventId } = useParams();
+    // const [guests, setGuests] = useState([]);
+    const [emailContent, setEmailContent] = useState(''); // Email content for blast
+    const navigate = useNavigate()
+
+    useEffect(() => {
+
+        const token = localStorage.getItem('jwtToken');
+
+        const config = {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+        }
+
+        const fetchEvents = async () => {
+            try {
+                const response = await axios.get("http://localhost:8080/event/listing", config);
+                const eventsArray = response.data; // Corrected from 'response.date' to 'response.data'
+                const eventDetails = eventsArray.find(obj => obj.id == eventId); // Find the event by ID
+                setEvent(eventDetails); // Set the found event
+            } catch (error) {
+                console.error("Error fetching event details:", error);
+            }
+        };
+
+
+        const fetchGuests = async () => {
+            try {
+                //call the guest data for the people who will be attending the event
+                // use the event id to get the guest details so make the event id as the foreign key in the guest list easy to handle
+                // const response = await axios.get("",config);
+                // setGuests(response.data);
+
+            } catch (error) {
+                console.error(error)
+            }
+        }
+
+        fetchEvents();
+    }, [eventId]);
+
 
     // Placeholder guest list
     const [guests, setGuests] = useState([
         { name: 'Abhishek', email: 'stealthassaulter@gmail.com', status: 'Going', date: 'Aug 23' },
         { name: 'Yash', email: 'yash.dusankar@gmail.com', status: 'Going', date: 'Aug 23' },
         { name: 'ADITYA YADAV', email: 'aditya.yadav22@vit.edu', status: 'Going', date: 'Aug 23' },
-        { name: 'Anonymous', email: 'swarnim.yawale22@vit.edu', status: 'Invited', date: 'Aug 23' },
+        { name: 'Anonymous', email: 'swarnim.yawale22@vit.edu', status: 'Cancel', date: 'Aug 23' },
     ]);
 
     const [capacity, setCapacity] = useState(100); // Editable event capacity
-    const [emailContent, setEmailContent] = useState(''); // Email content for blast
 
     const handleCapacityChange = (e) => {
         setCapacity(e.target.value);
@@ -34,14 +72,16 @@ const EventDetails = () => {
         <div className="max-w-4xl mx-auto py-8 px-4">
             {/* Event Recap */}
             <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                <h3 className="text-xl font-semibold mb-4">Event Recap</h3>
+                <h3 className="text-xl font-semibold mb-4">Event Details</h3>
                 <div className="flex items-center mb-2">
                     <Calendar className="w-5 h-5 text-gray-500 mr-2" />
-                    <span>{event.date}</span>
+                    <span>{event.eventEnd
+                    }</span>
                 </div>
                 <div className="flex items-center mb-2">
                     <Clock className="w-5 h-5 text-gray-500 mr-2" />
-                    <span>{event.time}</span>
+                    <span>{event.eventStart
+                    }</span>
                 </div>
                 <div className="flex items-center mb-2">
                     <MapPin className="w-5 h-5 text-gray-500 mr-2" />
@@ -51,9 +91,6 @@ const EventDetails = () => {
                     <Users className="w-5 h-5 text-gray-500 mr-2" />
                     <span>{event.guestsCount} Guests</span>
                 </div>
-                <button className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 mt-4">
-                    Edit Event
-                </button>
             </div>
 
             {/* Guest List */}
@@ -69,10 +106,7 @@ const EventDetails = () => {
                         <select className="mr-2 px-3 py-2 border border-gray-300 rounded-md">
                             <option>All Guests</option>
                             <option>Going</option>
-                            <option>Invited</option>
-                        </select>
-                        <select className="px-3 py-2 border border-gray-300 rounded-md">
-                            <option>Register Time</option>
+                            <option>Cancelled</option>
                         </select>
                     </div>
                 </div>
@@ -106,9 +140,15 @@ const EventDetails = () => {
                     id="capacity"
                     value={capacity}
                     onChange={handleCapacityChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-4 py-2  mb-6 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
+                <button className="bg-green-500 text-white rounded-lg shadow-md p-4 mb-6 w-full text-center hover:bg-green-600" onClick={() => navigate(`/admin/vendor/${eventId}`)}>
+                    Manage Vendor
+                </button>
             </div>
+
+
+
 
             {/* Blast Email Section */}
             <div className="bg-white rounded-lg shadow-md p-6 mb-6">

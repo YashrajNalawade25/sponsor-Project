@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, MapPin } from 'lucide-react';
+import axios from 'axios';
 
 const Dashboard = () => {
     const navigate = useNavigate();
@@ -15,33 +16,21 @@ const Dashboard = () => {
             setisAuthenticated(true);
         }
 
-
+        const config = {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+        }
 
         if (isAuthenticated) {
-            const fetchEvents = () => {
+            const fetchEvents = async () => {
                 //restful call to the events DB to list the events 
                 //here to call from database to list the events response to be array of objects 
                 // ensure that each event has unique id 
-
-                const sampleEvents = [
-                    {
-                        id: 1,
-                        name: 'Music Event',
-                        bannerUrl: '/path-to-banner-image',
-                        organizer: 'yashraj',
-                        date: 'Fri, Aug 23, 2:00 PM',
-                        location: 'Westend Mall',
-                    },
-                    {
-                        id: 2,
-                        name: 'Tech Conference',
-                        bannerUrl: '/path-to-banner-image',
-                        organizer: 'Alex',
-                        date: 'Sat, Sep 10, 10:00 AM',
-                        location: 'Tech Park',
-                    },
-                ];
-                setEvents(sampleEvents);
+                const response = await axios.get("http://localhost:8080/event/listing", config)
+                console.log(response.data)
+                setEvents(response.data);
             };
             fetchEvents();
         }
@@ -83,9 +72,10 @@ const Dashboard = () => {
                             <div>
                                 <h3 className="text-lg font-medium">{event.name}</h3>
                                 <p className="text-sm text-gray-500 flex items-center">
-                                    <span className="mr-2">By {event.organizer}</span>
+                                    <span className="mr-2">By {event.organizerEmail
+                                    }</span>
                                     <Calendar className="w-4 h-4 text-gray-500 mr-1" />
-                                    {event.date}
+                                    {event.eventStart}
                                 </p>
                                 <p className="text-sm text-gray-500 flex items-center">
                                     <MapPin className="w-4 h-4 text-gray-500 mr-1" />
@@ -102,7 +92,10 @@ const Dashboard = () => {
             <div className="mt-6">
                 <button
                     className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
-                    onClick={() => navigate('/admin/auth')}
+                    onClick={() => {
+                        navigate('/admin/auth');
+                        localStorage.removeItem('jwtToken')
+                    }}
                 >
                     Log Out
                 </button>
