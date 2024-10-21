@@ -1,8 +1,12 @@
 import React from 'react';
-import { FaLock, FaTachometerAlt, FaStore, FaPlus } from 'react-icons/fa'; // Importing icons
-import { NavLink } from 'react-router-dom';
+import { FaLock, FaTachometerAlt, FaStore, FaPlus, FaSignOutAlt } from 'react-icons/fa'; // Importing icons
+import { NavLink, useNavigate } from 'react-router-dom';
+
 
 function Navbar() {
+
+    const navigate = useNavigate();
+
     return (
         <nav className="bg-white p-4">
             <div className="max-w-7xl mx-auto flex justify-between items-center">
@@ -25,6 +29,16 @@ function Navbar() {
                         <FaLock />
                         <span>Authenticate</span>
                     </NavLink>
+                    <button
+                        onClick={() => {
+                            localStorage.removeItem('jwtToken')
+                            navigate('/')
+                        }}
+                        className="bg-gray-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-gray-600 transition-all"
+                    >
+                        <FaSignOutAlt />
+                        <span>Logout</span>
+                    </button>
                 </div>
             </div>
         </nav>

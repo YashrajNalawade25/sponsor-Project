@@ -10,6 +10,7 @@ import Vendor from "./pages/adminPage/Vendor";
 import Create from "./pages/adminPage/Create";
 import EventDetails from "./pages/adminPage/EventDetails";
 import AuthAdmin from "./pages/adminPage/AuthAdmin";
+import Drag from "./pages/adminPage/Drag";
 
 function App() {
 
@@ -30,6 +31,7 @@ function App() {
           <Route path="auth" element={<AuthAdmin />} />
           <Route path="create" element={<Create />} />
           <Route path="/admin/event/:eventId" element={<EventDetails />} />
+          <Route path="/admin/drag/:eventId" element={<Drag />} />
         </Route>
       </Routes>
     </Router>

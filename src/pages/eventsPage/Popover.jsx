@@ -1,20 +1,39 @@
-import React, { useState } from 'react';
+import axios from 'axios';
+import React from 'react';
 
 function Popover({ show, event, onClose }) {
-    const [guests, setGuests] = useState(1); // State to manage the number of guests
 
     if (!show) return null;
 
-    const handleGuestChange = (e) => {
-        setGuests(e.target.value);
-    };
+    const handleSubmit = async () => {
+        // Get the JWT token from localStorage
+        const token = localStorage.getItem('jwtToken');
 
-    const handleSubmit = () => {
+        // Check if the token exists, if not, prompt the user to log in
+        if (!token) {
+            alert('No token found, please log in.');
+            return;
+        }
 
-        //restful api call for updatind both attendees DB and the event DB handle token here as well
-        //here we have the events object coming as prop from the listing page so uses the events id and update accordingly
-        console.log(`Guests coming: ${guests}`);
-        onClose();
+        // Configure the headers with the Bearer token
+        const config = {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        };
+
+        // Make the POST request to add the event for the attendee
+        try {
+            const response = await axios.post(`http://localhost:8080/attendee/addEvent/${event.id}`, {}, config);
+            console.log(response.status);
+            alert("successfully booked")
+            // Close the popover after the request completes
+            onClose();
+        } catch (error) {
+            console.error('Error:', error);
+            alert('There was an error confirming your booking. Please try again.');
+        }
     };
 
     return (
@@ -24,31 +43,16 @@ function Popover({ show, event, onClose }) {
                     &times;
                 </button>
                 <h2 className="text-xl font-bold mb-4">Confirm Booking</h2>
-                <p><strong>Event Name:</strong> {event.title}</p>
-                <p><strong>Date:</strong> {event.date}</p>
-                <p><strong>Price:</strong> {event.price}</p>
-
-                {/* Number of Guests Input Field */}
-                <div className="mt-4">
-                    <label className="block text-gray-700 font-bold mb-2" htmlFor="guests">
-                        Number of Guests:
-                    </label>
-                    <input
-                        type="number"
-                        id="guests"
-                        value={guests}
-                        onChange={handleGuestChange}
-                        min="1"
-                        className="w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring focus:ring-red-500"
-                    />
-                </div>
+                <p><strong>Event Name:</strong> {event.name}</p>
+                <p><strong>Date:</strong> {event.eventStart}</p>
+                <p><strong>Price:</strong> {event.ticketDetail}</p>
 
                 {/* Submit Button */}
                 <button
                     className="mt-4 bg-red-500 text-white px-4 py-2 rounded-lg w-full"
                     onClick={handleSubmit}
                 >
-                    Confirm Guests and Close
+                    Confirm Booking and Close
                 </button>
             </div>
         </div>

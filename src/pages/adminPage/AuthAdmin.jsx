@@ -8,6 +8,7 @@ function AuthAdmin() {
     const [loginPassword, setLoginPassword] = useState("");
     const [signinEmail, setSigninEmail] = useState("");
     const [signinPassword, setSigninPassword] = useState("");
+    const [organizerName, setName] = useState("");
     const navigate = useNavigate();
 
     // Function to handle login
@@ -18,7 +19,7 @@ function AuthAdmin() {
                 email: loginEmail,
                 password: loginPassword,
             };
-            const response = await axios.post("http://localhost:8080/login", cred);
+            const response = await axios.post("http://localhost:8080/organizer/login", cred);
             const token = response.data;
             console.log(token)
             localStorage.setItem("jwtToken", token);
@@ -33,13 +34,14 @@ function AuthAdmin() {
     const handleSignUp = async (e) => {
         e.preventDefault(); // Prevent page reload
         try {
-            const response = await axios.post("https://your-backend-url.com/api/signup", {
+            const response = await axios.post("http://localhost:8080/organizer/register", {
+                name: organizerName,
                 email: signinEmail,
                 password: signinPassword,
             });
             const token = response.data.token;
             localStorage.setItem("jwtToken", token);
-            navigate("/admin");
+            navigate("/admin/auth");
             console.log("Signed up successfully");
         } catch (error) {
             console.error("Sign-up error:", error.response ? error.response.data : error.message);
@@ -108,6 +110,22 @@ function AuthAdmin() {
                     </form>
                 ) : (
                     <form onSubmit={handleSignUp} className="space-y-6">
+
+                        <div>
+                            <label htmlFor="organizername" className="block text-sm font-medium text-gray-700">
+                                Name
+                            </label>
+                            <input
+                                id="organizername"
+                                type="text"
+                                value={organizerName}
+                                onChange={(e) => setName(e.target.value)}
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                placeholder="Karan"
+                                required
+                            />
+                        </div>
+
                         <div>
                             <label htmlFor="signinEmail" className="block text-sm font-medium text-gray-700">
                                 Email

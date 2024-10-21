@@ -60,6 +60,7 @@ const Create = () => {
             console.log(finalData);
             const response = await axios.post("http://localhost:8080/event/create", finalData, config);
             console.log(response.data);
+            alert("event created successfully")
         } catch (error) {
             console.error("Error creating event:", error);
         }

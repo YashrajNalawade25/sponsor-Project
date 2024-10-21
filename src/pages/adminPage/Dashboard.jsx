@@ -25,13 +25,35 @@ const Dashboard = () => {
 
         if (isAuthenticated) {
             const fetchEvents = async () => {
-                //restful call to the events DB to list the events 
-                //here to call from database to list the events response to be array of objects 
-                // ensure that each event has unique id 
-                const response = await axios.get("http://localhost:8080/event/listing", config)
-                console.log(response.data)
-                setEvents(response.data);
+                try {
+                    const response = await axios.get("http://localhost:8080/event/listing", config);
+                    console.log(response.data);
+
+                    // Fetch images for each event
+                    const eventsWithImages = await Promise.all(response.data.map(async (event) => {
+                        try {
+                            const imageResponse = await axios.get(`http://localhost:8080/event/${event.id}/image`, {
+                                ...config,
+                                responseType: 'blob'
+                            });
+                            const imageUrl = URL.createObjectURL(imageResponse.data);
+                            return { ...event, imageUrl };
+                        } catch (error) {
+                            console.error(`Error fetching image for event ${event.id}:`, error);
+                            return { ...event, imageUrl: null };
+                        }
+                    }));
+
+                    setEvents(eventsWithImages);
+                } catch (error) {
+                    console.error("Error fetching events:", error);
+                }
             };
+
+            fetchEvents();
+
+
+
             fetchEvents();
         }
     }, [isAuthenticated]);
@@ -65,9 +87,9 @@ const Dashboard = () => {
                             onClick={() => navigate(`/admin/event/${event.id}`)} // Navigate to event details page
                         >
                             <img
-                                src={event.bannerUrl}
+                                src={event.imageUrl}
                                 alt={event.name}
-                                className="w-16 h-16 rounded-md object-cover mr-4"
+                                className="w-25 h-24 rounded-md object-cover mr-4"
                             />
                             <div>
                                 <h3 className="text-lg font-medium">{event.name}</h3>
@@ -88,18 +110,6 @@ const Dashboard = () => {
             ) : (
                 <p className="text-gray-600">You have no events to manage yet.</p>
             )}
-
-            <div className="mt-6">
-                <button
-                    className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
-                    onClick={() => {
-                        navigate('/admin/auth');
-                        localStorage.removeItem('jwtToken')
-                    }}
-                >
-                    Log Out
-                </button>
-            </div>
         </div>
     );
 };

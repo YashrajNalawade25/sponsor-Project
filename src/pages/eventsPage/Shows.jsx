@@ -1,41 +1,47 @@
+import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 
 function Shows() {
 
-    //dummy data remove afterwards 
-    const [bookedShows, setBookedShows] = useState([
-        {
-            id: 1,
-            showName: 'Broadway Musical',
-            date: '2024-10-10',
-            time: '7:00 PM',
-            numberOfPeople: 2,
-        },
-        {
-            id: 2,
-            showName: 'Comedy Night',
-            date: '2024-10-12',
-            time: '9:00 PM',
-            numberOfPeople: 4,
-        },
-        {
-            id: 3,
-            showName: 'Drama Play',
-            date: '2024-10-15',
-            time: '6:00 PM',
-            numberOfPeople: 1,
-        },
-    ]);
+    // State to manage booked shows
+    const [bookedShows, setBookedShows] = useState([]);
 
+    // Function to cancel a show
     const cancelShow = (id) => {
-
-        // restful api call to cancel the booking update the both DB attendees and events
+        // Update the UI by filtering out the canceled show
         setBookedShows(bookedShows.filter(show => show.id !== id));
+        // Here you would add the API call to update the DB as well
     };
 
     useEffect(() => {
-        //restful call to the attendee DB to list the events he has booked for response should be array of objects
-    }, [])
+        // Define an async function inside useEffect
+        const fetchBookedShows = async () => {
+            const token = localStorage.getItem('jwtToken');
+
+            if (!token) {
+                alert('No token found, please log in.');
+                return;
+            }
+
+            const config = {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            };
+
+            try {
+                // Make the API call to fetch booked events
+                const response = await axios.get("http://localhost:8080/attendee/events", config);
+                setBookedShows(response.data);
+            } catch (error) {
+                console.error('Error fetching booked shows:', error);
+                alert('Failed to fetch booked shows.');
+            }
+        };
+
+        fetchBookedShows();
+    }, []); // Empty dependency array to run on mount
 
     return (
         <div className="max-w-4xl mx-auto mt-10">
@@ -43,10 +49,8 @@ function Shows() {
             <ul className="space-y-6">
                 {bookedShows.map(show => (
                     <li key={show.id} className="bg-white shadow-md rounded-lg p-6 border border-gray-200">
-                        <h3 className="text-2xl font-semibold text-gray-800">{show.showName}</h3>
-                        <p className="text-gray-600">Date: {show.date}</p>
-                        <p className="text-gray-600">Time: {show.time}</p>
-                        <p className="text-gray-600">Number of People: {show.numberOfPeople}</p>
+                        <h3 className="text-2xl font-semibold text-gray-800">{show.name}</h3>
+                        <p className="text-gray-600">Date and timing: {show.eventStart}</p>
                         <button
                             onClick={() => cancelShow(show.id)}
                             className="mt-4 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all"
