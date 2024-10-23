@@ -8,7 +8,8 @@ function Authusers() {
     const [loginPassword, setLoginPassword] = useState("");
     const [signinEmail, setSigninEmail] = useState("");
     const [signinPassword, setSigninPassword] = useState("");
-    const [organizerName, setName] = useState("");
+    const [attendeeName, setAttendeeName] = useState(""); // Changed from organizerName
+    const [error, setError] = useState(""); // To display error messages
     const navigate = useNavigate();
 
     // Function to handle login
@@ -20,33 +21,37 @@ function Authusers() {
                 password: loginPassword,
             };
             const response = await axios.post("http://localhost:8080/attendee/login", cred);
-            const token = response.data;
+            const token = response.data; // Make sure the response has a token field
             localStorage.setItem("jwtToken", token);
             navigate("/events"); // Redirect to events page
             console.log("Logged in successfully");
         } catch (error) {
+            setError(error.response ? error.response.data : error.message);
             console.error("Login error:", error.response ? error.response.data : error.message);
         }
     };
 
     // Function to handle sign-up
+    // Function to handle sign-up
     const handleSignUp = async (e) => {
         e.preventDefault(); // Prevent page reload
         try {
             const response = await axios.post("http://localhost:8080/attendee/register", {
-                name: organizerName,
+                name: attendeeName,
                 email: signinEmail,
                 password: signinPassword,
             });
 
-            // After successful sign-up, switch to login form
-            setIsLogin(true);
-
-            console.log("Signed up successfully. Please log in.");
+            if (response.status === 201 || response.status === 200) { // Check if the sign-up was successful
+                console.log("Signed up successfully");
+                setIsLogin(true); // Switch to the login form after sign-up
+            }
         } catch (error) {
+            setError(error.response ? error.response.data : error.message);
             console.error("Sign-up error:", error.response ? error.response.data : error.message);
         }
     };
+
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -65,6 +70,9 @@ function Authusers() {
                         Sign Up
                     </button>
                 </div>
+
+                {/* Display error message */}
+                {error && <div className="text-red-500 text-sm">{error}</div>}
 
                 {/* Conditionally render either the login or sign-up form */}
                 {isLogin ? (
@@ -111,14 +119,14 @@ function Authusers() {
                 ) : (
                     <form onSubmit={handleSignUp} className="space-y-6">
                         <div>
-                            <label htmlFor="organizername" className="block text-sm font-medium text-gray-700">
+                            <label htmlFor="attendeeName" className="block text-sm font-medium text-gray-700">
                                 Name
                             </label>
                             <input
-                                id="organizername"
+                                id="attendeeName"
                                 type="text"
-                                value={organizerName}
-                                onChange={(e) => setName(e.target.value)}
+                                value={attendeeName}
+                                onChange={(e) => setAttendeeName(e.target.value)}
                                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                 placeholder="Karan"
                                 required

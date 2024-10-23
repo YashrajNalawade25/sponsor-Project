@@ -11,6 +11,7 @@ function AuthAdmin() {
     const [organizerName, setName] = useState("");
     const navigate = useNavigate();
 
+
     // Function to handle login
     const handleLogin = async (e) => {
         e.preventDefault(); // Prevent page reload
@@ -31,6 +32,7 @@ function AuthAdmin() {
     };
 
     // Function to handle sign-up
+    // Function to handle sign-up
     const handleSignUp = async (e) => {
         e.preventDefault(); // Prevent page reload
         try {
@@ -39,14 +41,16 @@ function AuthAdmin() {
                 email: signinEmail,
                 password: signinPassword,
             });
-            const token = response.data.token;
-            localStorage.setItem("jwtToken", token);
-            navigate("/admin/auth");
-            console.log("Signed up successfully");
+
+            if (response.status === 201 || response.status === 200) { // Successful sign-up
+                console.log("Signed up successfully");
+                setIsLogin(true); // Switch to the login form after sign-up
+            }
         } catch (error) {
             console.error("Sign-up error:", error.response ? error.response.data : error.message);
         }
     };
+
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100">
