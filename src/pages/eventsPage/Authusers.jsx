@@ -1,26 +1,30 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
 
 function Authusers() {
     const [isLogin, setIsLogin] = useState(true); // Toggle between login and sign-up
-    const [loginEmail, setLoginEmail] = useState("");
-    const [loginPassword, setLoginPassword] = useState("");
-    const [signinEmail, setSigninEmail] = useState("");
-    const [signinPassword, setSigninPassword] = useState("");
-    const [attendeeName, setAttendeeName] = useState(""); // Changed from organizerName
     const [error, setError] = useState(""); // To display error messages
     const navigate = useNavigate();
 
+    // React Hook Form setup
+    const {
+        register: registerLogin,
+        handleSubmit: handleSubmitLogin,
+        formState: { errors: loginErrors },
+    } = useForm();
+
+    const {
+        register: registerSignUp,
+        handleSubmit: handleSubmitSignUp,
+        formState: { errors: signupErrors },
+    } = useForm();
+
     // Function to handle login
-    const handleLogin = async (e) => {
-        e.preventDefault(); // Prevent page reload
+    const handleLogin = async (data) => {
         try {
-            const cred = {
-                email: loginEmail,
-                password: loginPassword,
-            };
-            const response = await axios.post("http://localhost:8080/attendee/login", cred);
+            const response = await axios.post("http://localhost:8080/attendee/login", data);
             const token = response.data; // Make sure the response has a token field
             localStorage.setItem("jwtToken", token);
             navigate("/events"); // Redirect to events page
@@ -32,17 +36,11 @@ function Authusers() {
     };
 
     // Function to handle sign-up
-    // Function to handle sign-up
-    const handleSignUp = async (e) => {
-        e.preventDefault(); // Prevent page reload
+    const handleSignUp = async (data) => {
         try {
-            const response = await axios.post("http://localhost:8080/attendee/register", {
-                name: attendeeName,
-                email: signinEmail,
-                password: signinPassword,
-            });
+            const response = await axios.post("http://localhost:8080/attendee/register", data);
 
-            if (response.status === 201 || response.status === 200) { // Check if the sign-up was successful
+            if (response.status === 201 || response.status === 200) {
                 console.log("Signed up successfully");
                 setIsLogin(true); // Switch to the login form after sign-up
             }
@@ -51,7 +49,6 @@ function Authusers() {
             console.error("Sign-up error:", error.response ? error.response.data : error.message);
         }
     };
-
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -76,7 +73,7 @@ function Authusers() {
 
                 {/* Conditionally render either the login or sign-up form */}
                 {isLogin ? (
-                    <form onSubmit={handleLogin} className="space-y-6">
+                    <form onSubmit={handleSubmitLogin(handleLogin)} className="space-y-6">
                         <div>
                             <label htmlFor="loginEmail" className="block text-sm font-medium text-gray-700">
                                 Email
@@ -84,12 +81,17 @@ function Authusers() {
                             <input
                                 id="loginEmail"
                                 type="email"
-                                value={loginEmail}
-                                onChange={(e) => setLoginEmail(e.target.value)}
+                                {...registerLogin("email", {
+                                    required: "Email is required",
+                                    pattern: {
+                                        value: /^[a-zA-Z0-9._%+-]+@gmail\.com$/,
+                                        message: "Enter a valid @gmail.com email address",
+                                    },
+                                })}
                                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                placeholder="you@example.com"
-                                required
+                                placeholder="you@gmail.com"
                             />
+                            {loginErrors.email && <p className="text-red-500">{loginErrors.email.message}</p>}
                         </div>
 
                         <div>
@@ -99,12 +101,11 @@ function Authusers() {
                             <input
                                 id="loginPassword"
                                 type="password"
-                                value={loginPassword}
-                                onChange={(e) => setLoginPassword(e.target.value)}
+                                {...registerLogin("password", { required: "Password is required" })}
                                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                 placeholder="Enter your password"
-                                required
                             />
+                            {loginErrors.password && <p className="text-red-500">{loginErrors.password.message}</p>}
                         </div>
 
                         <div>
@@ -117,7 +118,7 @@ function Authusers() {
                         </div>
                     </form>
                 ) : (
-                    <form onSubmit={handleSignUp} className="space-y-6">
+                    <form onSubmit={handleSubmitSignUp(handleSignUp)} className="space-y-6">
                         <div>
                             <label htmlFor="attendeeName" className="block text-sm font-medium text-gray-700">
                                 Name
@@ -125,12 +126,11 @@ function Authusers() {
                             <input
                                 id="attendeeName"
                                 type="text"
-                                value={attendeeName}
-                                onChange={(e) => setAttendeeName(e.target.value)}
+                                {...registerSignUp("name", { required: "Name is required" })}
                                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                 placeholder="Karan"
-                                required
                             />
+                            {signupErrors.name && <p className="text-red-500">{signupErrors.name.message}</p>}
                         </div>
 
                         <div>
@@ -140,12 +140,17 @@ function Authusers() {
                             <input
                                 id="signinEmail"
                                 type="email"
-                                value={signinEmail}
-                                onChange={(e) => setSigninEmail(e.target.value)}
+                                {...registerSignUp("email", {
+                                    required: "Email is required",
+                                    pattern: {
+                                        value: /^[a-zA-Z0-9._%+-]+@gmail\.com$/,
+                                        message: "Enter a valid @gmail.com email address",
+                                    },
+                                })}
                                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                placeholder="you@example.com"
-                                required
+                                placeholder="you@gmail.com"
                             />
+                            {signupErrors.email && <p className="text-red-500">{signupErrors.email.message}</p>}
                         </div>
 
                         <div>
@@ -155,12 +160,11 @@ function Authusers() {
                             <input
                                 id="signinPassword"
                                 type="password"
-                                value={signinPassword}
-                                onChange={(e) => setSigninPassword(e.target.value)}
+                                {...registerSignUp("password", { required: "Password is required" })}
                                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                 placeholder="Enter your password"
-                                required
                             />
+                            {signupErrors.password && <p className="text-red-500">{signupErrors.password.message}</p>}
                         </div>
 
                         <div>
